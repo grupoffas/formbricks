@@ -324,16 +324,16 @@ export const getPersonByUserId = async (environmentId: string, userId: string): 
         },
         select: selectPerson,
       });
-
-      const userIdAttributeClassId = personWithUserIdAttribute?.attributes.find(
-        (attr) => attr.attributeClass.name === "userId" && attr.value === userId
-      )?.attributeClass.id;
-
-      if (!personWithUserIdAttribute) {
-        return null;
+      
+      if (personWithUserIdAttribute) {
+        const userIdAttributeClassId = personWithUserIdAttribute.attributes.find(
+          (attr) => attr.attributeClass.name === "userId" && attr.value === userId
+        )?.attributeClass.id;
+        personWithUserIdAttribute.userId = userId;
+        personWithUserIdAttribute.attributes = personWithUserIdAttribute.attributes.filter(
+          attr => attr.attributeClass.id !== userIdAttributeClassId
+        );
       }
-
-      personWithUserIdAttribute = await prisma.person.update({
         where: {
           id: personWithUserIdAttribute.id,
         },
