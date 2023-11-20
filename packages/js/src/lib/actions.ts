@@ -34,14 +34,14 @@ export const trackAction = async (
     });
 
     if (!res.ok) {
-      throw new Error("Could not create display");
+      return err({
+        code: "network_error",
+        status: res.status,
+        message: "Error creating display",
+        url: res.url,
+        responseMessage: resJson.message,
+      });
     }
-  }
-
-  logger.debug(`Formbricks: Action "${name}" tracked`);
-
-  // get a list of surveys that are collecting insights
-  const activeSurveys = config.get().state?.surveys;
 
   if (!!activeSurveys && activeSurveys.length > 0) {
     triggerSurvey(name, activeSurveys);
