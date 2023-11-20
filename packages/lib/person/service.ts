@@ -291,24 +291,24 @@ export const updatePerson = async (personId: string, personInput: TPersonUpdateI
   }
 };
 
+async function selectPersonFromDB(environmentId: string, userId: string) {
+  return await prisma.person.findFirst({
+    where: {
+      environmentId,
+      userId,
+    },
+    select: selectPerson,
+  });
+}
 export const getPersonByUserId = async (environmentId: string, userId: string): Promise<TPerson | null> =>
   await unstable_cache(
     async () => {
       validateInputs([environmentId, ZId], [userId, ZString]);
-
       // check if userId exists as a column
-      const personWithUserId = await prisma.person.findFirst({
-        where: {
-          environmentId,
-          userId,
-        },
-        select: selectPerson,
-      });
-
+      const personWithUserId = await selectPersonFromDB(environmentId, userId);
       if (personWithUserId) {
         return transformPrismaPerson(personWithUserId);
       }
-
       // Check if a person with the userId attribute exists
       let personWithUserIdAttribute = await prisma.person.findFirst({
         where: {
@@ -324,15 +324,12 @@ export const getPersonByUserId = async (environmentId: string, userId: string): 
         },
         select: selectPerson,
       });
-
       const userIdAttributeClassId = personWithUserIdAttribute?.attributes.find(
         (attr) => attr.attributeClass.name === "userId" && attr.value === userId
       )?.attributeClass.id;
-
       if (!personWithUserIdAttribute) {
         return null;
       }
-
       personWithUserIdAttribute = await prisma.person.update({
         where: {
           id: personWithUserIdAttribute.id,
@@ -345,16 +342,19 @@ export const getPersonByUserId = async (environmentId: string, userId: string): 
         },
         select: selectPerson,
       });
-
       personCache.revalidate({
         id: personWithUserIdAttribute.id,
         environmentId,
         userId,
       });
-
       return transformPrismaPerson(personWithUserIdAttribute);
     },
     [`getPersonByUserId-${environmentId}-${userId}`],
+    {
+      tags: [personCache.tag.byEnvironmentIdAndUserId(environmentId, userId)],
+      revalidate: SERVICES_REVALIDATION_INTERVAL,
+    }
+  )();
     {
       tags: [personCache.tag.byEnvironmentIdAndUserId(environmentId, userId)],
       revalidate: SERVICES_REVALIDATION_INTERVAL,
