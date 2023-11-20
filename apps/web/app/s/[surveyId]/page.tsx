@@ -147,13 +147,13 @@ export default async function LinkSurveyPage({ params, searchParams }: LinkSurve
 
   const userId = searchParams.userId;
   if (userId) {
-    // make sure the person exists or get's created
+    // Using getPersonByUserId to check if a person with the given userId exists
     const person = await getPersonByUserId(userId, survey.environmentId);
+    // If the person doesn't exist, using createPerson to create a new person
     if (!person) {
       await createPerson(survey.environmentId, userId);
     }
   }
-
   const isSurveyPinProtected = Boolean(!!survey && survey.pin);
 
   if (isSurveyPinProtected) {
