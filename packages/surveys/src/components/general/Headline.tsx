@@ -3,15 +3,14 @@ interface HeadlineProps {
   questionId: string;
   style?: any;
   required?: boolean;
-  isThankYouCard?: boolean;
+  className?: string;
 }
-
 export default function Headline({
   headline,
   questionId,
   style,
   required = true,
-  isThankYouCard = false,
+  className = "",
 }: HeadlineProps) {
   return (
     <label
@@ -19,7 +18,7 @@ export default function Headline({
       className="text-heading mb-1.5 block text-base font-semibold leading-6"
       style={style}>
       <div
-        className={`flex items-center  ${isThankYouCard ? "justify-center" : "mr-[3ch] justify-between"}`}
+        className={`flex items-center  ${className}`}
         style={style}>
         {headline}
         {!required && (
@@ -30,4 +29,5 @@ export default function Headline({
       </div>
     </label>
   );
+}
 }
