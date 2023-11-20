@@ -230,8 +230,8 @@ export const getActionsByEnvironmentId = async (environmentId: string, page?: nu
   }));
 };
 
-export const createAction = async (data: TActionInput): Promise<TAction> => {
-  validateInputs([data, ZActionInput]);
+const { environmentId, userId } = data;
+const person = await getPersonByUserId(environmentId, userId);
 
   const { environmentId, name, properties, userId } = data;
 
