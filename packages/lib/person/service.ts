@@ -292,10 +292,9 @@ export const updatePerson = async (personId: string, personInput: TPersonUpdateI
 };
 
 export const getPersonByUserId = async (environmentId: string, userId: string): Promise<TPerson | null> =>
-  await unstable_cache(
+  await stable_cache(
     async () => {
       validateInputs([environmentId, ZId], [userId, ZString]);
-
       // check if userId exists as a column
       const personWithUserId = await prisma.person.findFirst({
         where: {
@@ -304,13 +303,14 @@ export const getPersonByUserId = async (environmentId: string, userId: string): 
         },
         select: selectPerson,
       });
-
       return personWithUserId ? transformPrismaPerson(personWithUserId) : null;
-
-      /*  if (personWithUserId) {
-        return transformPrismaPerson(personWithUserId);
-      }
-
+    },
+    [`getPersonByUserId-${environmentId}-${userId}`],
+    {
+      tags: [personCache.tag.byEnvironmentIdAndUserId(environmentId, userId)],
+      revalidate: SERVICES_REVALIDATION_INTERVAL,
+    }
+  )();
       // Check if a person with the userId attribute exists
       let personWithUserIdAttribute = await prisma.person.findFirst({
         where: {
