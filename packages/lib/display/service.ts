@@ -68,14 +68,14 @@ export const updateDisplay = async (
 ): Promise<TDisplay> => {
   validateInputs([displayInput, ZDisplayUpdateInput.partial()]);
 
+  const { environmentId, userId } = displayInput;
   let person: TPerson | null = null;
-  if (displayInput.userId) {
-    person = await getPersonByUserId(displayInput.environmentId, displayInput.userId);
+  if (userId) {
+    person = await getPersonByUserId(environmentId, userId);
     if (!person) {
-      throw new ResourceNotFoundError("Person", displayInput.userId);
+      throw new ResourceNotFoundError("Person", userId);
     }
   }
-
   try {
     const data = {
       ...(person?.id && {
